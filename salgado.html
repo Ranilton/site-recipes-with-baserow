@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Receita Salgada</title>
+    <style>
+      /* Estilos CSS para a página de detalhes */
+      .container {
+        width: 80%;
+        margin: 20px auto;
+        padding: 0 20px;
+        text-align: center;
+        height: 100%;
+      }
+      .receita {
+        display: flex;
+        flex-direction: column; /* Alterado para coluna */
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        overflow: hidden;
+        background-color: rgba(0, 0, 255, 0.322);
+      }
+
+      .video {
+        padding: 20px;
+        display: none; /* Inicialmente invisível */
+        height: 100%;
+      }
+
+      .video video,
+      .video iframe {
+        width: 1069px;
+        height: 611px;
+        border-radius: 10px;
+      }
+
+      .passos {
+        padding: 20px;
+        background-color: #f9f9f9;
+      }
+
+      .passos h2 {
+        font-size: 3rem;
+        margin-bottom: 10px;
+      }
+
+      .passos img {
+        width: 50%;
+        height: auto;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+      .passos p {
+        font-size: 20pt;
+        margin-bottom: 10px;
+        text-align: justify;
+      }
+      @media (max-width: 480px) {
+        .passos p {
+          font-size: 12pt;
+        }
+        .passos h2 {
+          font-size: 1.5rem;
+        }
+        .container {
+          width: 100%;
+          margin: 0;
+          padding: 0;
+        }
+      }
+      @media (max-width: 1280px) {
+        .video {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          padding-bottom: 56.25%; /* 16:9 ratio (9/16*100) */
+          display: none;
+        }
+
+        .video video,
+        .video iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+          border-radius: 10px;
+        }
+        .container {
+          width: 100%;
+          margin: 0;
+          padding: 0;
+          text-align: center;
+          height: 100%;
+        }
+        .receita {
+          display: flex;
+          flex-direction: column; /* Alterado para coluna */
+          margin-top: 0;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          overflow: hidden;
+          background-color: rgba(0, 0, 255, 0.322);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <section class="receita">
+        <div class="passos" id="detalhesReceita">
+          <!-- Aqui serão inseridos os detalhes da receita dinamicamente -->
+        </div>
+        <div class="video" id="videoContainer">
+          <!-- Aqui será inserido o elemento de vídeo -->
+        </div>
+        <div class="video" id="videoContainerYT">
+          <!-- Aqui será inserido o elemento de vídeo -->
+        </div>
+      </section>
+    </div>
+
+    <script>
+      // Variáveis de configuração da API do Baserow para a tabela de detalhes
+      const apiKey = "msqVI3eCKjDfQPDRCC1XU1EfT39ToYpA";
+      const detalhesTableId = "71074";
+
+      // Função para buscar detalhes da receita pelo nome
+      async function fetchDetalhesReceita(nomeReceita) {
+        const url = `https://api.baserow.io/api/database/rows/table/${detalhesTableId}/?user_field_names=true`;
+
+        try {
+          const response = await fetch(url, {
+            headers: {
+              Authorization: `Token ${apiKey}`,
+            },
+          });
+          const data = await response.json();
+          return data.results.find((receita) => receita.nome === nomeReceita); // Encontra a receita pelo nome
+        } catch (error) {
+          console.error("Erro ao buscar detalhes da receita:", error);
+          return null; // Retorna null em caso de erro
+        }
+      }
+
+      // Função para renderizar os detalhes da receita na página
+      async function renderDetalhesReceita() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const nomeReceita = urlParams.get("nome");
+
+        if (!nomeReceita) {
+          console.error("Nome da receita não especificado.");
+          return;
+        }
+
+        const detalhesReceita = await fetchDetalhesReceita(nomeReceita);
+        const detalhesReceitaContainer =
+          document.getElementById("detalhesReceita");
+        const videoContainer = document.getElementById("videoContainer");
+        const videoContainerYT = document.getElementById("videoContainerYT");
+
+        if (!detalhesReceita) {
+          detalhesReceitaContainer.innerHTML =
+            "<p>Não foi possível encontrar detalhes para esta receita.</p>";
+          return;
+        }
+
+        const titulo = document.createElement("h2");
+        titulo.innerHTML = detalhesReceita.nome.replace(
+          /([:])/g,
+          "$1<br>"
+        );
+
+        const imagem = document.createElement("img");
+        imagem.src = detalhesReceita.imagem;
+        imagem.alt = detalhesReceita.nome;
+
+        const ingredientesTitulo = document.createElement("p");
+        ingredientesTitulo.textContent = "RECEITA:";
+
+        const ingredientesTexto = document.createElement("p");
+        ingredientesTexto.innerHTML = detalhesReceita.ingredientes.replace(
+          /([.:;])/g,
+          "$1<br>"
+        );
+
+        const preparoTexto = document.createElement("p");
+        preparoTexto.innerHTML = detalhesReceita.preparo.replace(
+          /([.:;])/g,
+          "$1<br>"
+        );
+
+        detalhesReceitaContainer.appendChild(titulo);
+        detalhesReceitaContainer.appendChild(imagem);
+        detalhesReceitaContainer.appendChild(ingredientesTitulo);
+        detalhesReceitaContainer.appendChild(ingredientesTexto);
+        detalhesReceitaContainer.appendChild(preparoTexto);
+
+        // Verifica se há um vídeo disponível e o exibe
+        if (detalhesReceita.videos) {
+          videoContainer.style.display = "block";
+
+          const videoElement = document.createElement("video");
+          videoElement.width = 600;
+          videoElement.controls = true;
+
+          const sourceElement = document.createElement("source");
+          sourceElement.src = detalhesReceita.videos;
+          sourceElement.type = "video/mp4";
+
+          videoElement.appendChild(sourceElement);
+          videoContainer.appendChild(videoElement);
+        }
+
+        // Verifica se há um vídeo do YouTube disponível e o exibe
+        if (detalhesReceita.videosYT) {
+          videoContainerYT.style.display = "block";
+
+          const iframeVideo = document.createElement("iframe");
+          iframeVideo.src = detalhesReceita.videosYT;
+          iframeVideo.frameBorder = "0";
+          iframeVideo.allow =
+            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+          iframeVideo.allowFullscreen = true;
+
+          videoContainerYT.appendChild(iframeVideo);
+        }
+      }
+
+      // Chama a função para renderizar os detalhes da receita ao carregar a página
+      document.addEventListener("DOMContentLoaded", function () {
+        renderDetalhesReceita();
+      });
+    </script>
+  </body>
+</html>

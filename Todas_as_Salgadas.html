@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="javascript.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+    <title>Receitas Salgadas</title>
+  </head>
+  <body>
+    <header class="header">
+      <div class="logo">
+        <img id="img" src="assets/MRF.png" alt="logo" />
+      </div>
+      <div class="nav-container">
+        <div class="menu-toggle" onclick="toggleMenu()">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li>
+              <a href="#">Receitas</a>
+              <ul class="abrirReceitas">
+                <li><a href="Todas_as_Doces.html">Doces</a></li>
+                <li><a href="Todas_as_Salgadas.html">Salgados</a></li>
+              </ul>
+            </li>
+            <li><a href="#">Blogs</a></li>
+            <li><a href="#">Sobre</a></li>
+            <li><a href="#">Contato</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <div class="inicio">
+      <img src="assets/MRF.png" alt="" width="100px" />
+      <p>
+        É um facto estabelecido de que um leitor é distraído pelo conteúdo
+        legível de uma página quando analisa a sua mancha gráfica.
+      </p>
+    </div>
+    <section class="sec3">
+      <div class="receitas_d_s">
+        <h2 class="tipos">Receitas Salgadas</h2>
+        <div id="receitassalgadaContainer" class="rr">
+          <!-- Receitas doces serão inseridas dinamicamente -->
+        </div>
+      </div>
+      <div class="final1">
+        <div id="container">
+           <!-- coluna serão inseridas dinamicamente -->
+        </div>
+      </div>
+    </section>
+
+    <script>
+      // Configurações da API do Baserow para receitas salgadas e doces
+      const apiKey = "msqVI3eCKjDfQPDRCC1XU1EfT39ToYpA";
+      const salgadoTableId = "71074"; // ID da tabela de receitas salgadas
+      const salgadoUrl = `https://api.baserow.io/api/database/rows/table/${salgadoTableId}/?user_field_names=true`;
+
+      // Função para buscar dados do Baserow
+      async function fetchBaserowData(url) {
+        try {
+          const response = await fetch(url, {
+            headers: {
+              Authorization: `Token ${apiKey}`,
+            },
+          });
+          const data = await response.json();
+          return data.results;
+        } catch (error) {
+          console.error("Erro ao buscar dados do Baserow:", error);
+          return [];
+        }
+      }
+
+      // Função para renderizar receitas salgadas
+      async function renderReceitasSalgadas() {
+        const receitas = await fetchBaserowData(salgadoUrl);
+        const container = document.getElementById("receitassalgadaContainer");
+
+        container.innerHTML = ""; // Limpa o conteúdo atual
+
+        receitas.forEach((receita) => {
+          const receitaDiv = document.createElement("div");
+          receitaDiv.setAttribute("data-nome", receita.nome);
+
+          const receitaImg = document.createElement("img");
+          receitaImg.src = receita.imagem;
+          receitaImg.alt = receita.nome;
+
+          const receitaTitulo = document.createElement("h3");
+          receitaTitulo.textContent = receita.nome;
+
+          receitaDiv.appendChild(receitaImg);
+          receitaDiv.appendChild(receitaTitulo);
+
+          receitaDiv.addEventListener("click", function () {
+            const nomeReceita = receita.nome;
+            window.location.href = `salgado.html?tipo=salgado&nome=${encodeURIComponent(
+              nomeReceita
+            )}`;
+          });
+
+          container.appendChild(receitaDiv);
+        });
+      }
+
+      // Chamar as funções para renderizar as receitas quando a página carregar
+      document.addEventListener("DOMContentLoaded", function () {
+        renderReceitasSalgadas();
+      });
+
+      // URL base da API do Baserow
+      const BASE_URL = 'https://api.baserow.io/api/database/rows/table/';
+        // Substitua 'TABLE_ID' pelo ID da sua tabela
+        const TABLE_ID = '327072';
+        // Substitua 'YOUR_API_KEY' pela sua chave de API do Baserow
+        const API_KEY = 'msqVI3eCKjDfQPDRCC1XU1EfT39ToYpA';
+
+        async function fetchData() {
+            const response = await fetch(`${BASE_URL}${TABLE_ID}/?user_field_names=true`, {
+                headers: {
+                    'Authorization': `Token ${API_KEY}`
+                }
+            });
+
+            if (!response.ok) {
+                console.error('Erro ao buscar dados:', response.statusText);
+                return [];
+            }
+
+            const data = await response.json();
+            return data.results;
+        }
+
+        function createCard(item) {
+            const card = document.createElement('div');
+            card.className = 'final';
+
+            if (item.imagem1) {
+                const img1 = document.createElement('img');
+                img1.src = item.imagem1;
+                img1.alt = 'imagem';
+                img1.width = 100;
+                card.appendChild(img1);
+            }
+
+            if (item.titulo) {
+                const title = document.createElement('h3');
+                title.innerText = item.titulo;
+                card.appendChild(title);
+            }
+
+            if (item.texto) {
+                const text1 = document.createElement('p');
+                text1.innerText = item.texto;
+                card.appendChild(text1);
+            }
+            if (item.imagem2) {
+                const img2 = document.createElement('img');
+                img2.src = item.imagem2;
+                img2.alt = 'imagem';
+                img2.width = 100;
+                card.appendChild(img2);
+            }
+
+            if (item.referencias) {
+                const text2 = document.createElement('p');
+                text2.innerText = item.referencias;
+                card.appendChild(text2);
+            }
+
+            if (item.link) {
+                const link = document.createElement('a');
+                link.href = item.link;
+                link.innerText = 'Saiba Mais';
+                card.appendChild(link);
+            }
+
+            
+            return card;
+        }
+
+        function populateData(data) {
+            const container = document.getElementById('container');
+            container.innerHTML = ''; // Clear previous content
+
+            if (data.length === 0) {
+                console.log('Nenhum dado encontrado.');
+                container.style.display = 'none';
+            } else {
+                container.style.display = 'block';
+                data.forEach(item => {
+                    const card = createCard(item);
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const data = await fetchData();
+            populateData(data);
+        });
+    </script>
+  </body>
+</html>
